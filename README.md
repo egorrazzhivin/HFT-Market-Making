@@ -1,2 +1,2 @@
 # HFTMM
-Developing HFT market making strategy.
+Developing HFT market making strategies.
