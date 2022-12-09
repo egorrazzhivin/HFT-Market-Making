@@ -357,21 +357,26 @@ class BestPosStrategy:
         self.q = []
         self.spread = []
         self.vol = []
+        self.vols = [4.2]
+        self.ts = set(self.df['receive_ts'])
         self.index = 0
 
     #------------------------------------------------------VOLATILITY----------------
     def get_vol(self, receive_ts):
+        #print(self.vols)
         vol = 0
         if receive_ts<1655955074879744572:
             vol = 4.20
-        elif receive_ts>1655973115598409783:
-            vol = 5.40
         else:
-            vol = self.df.loc[340000+self.index-25000:340000+self.index,:]['btcusdt:Binance:LinearPerpetual_ask_price_0'].std()
-            if vol>100:
-                vol = 100
-            self.index+=3
-        return vol 
+            if receive_ts in self.ts:
+                index = self.df[self.df['receive_ts']==receive_ts].index[0]
+                vol = self.df.loc[index-25000:index,:]['btcusdt:Binance:LinearPerpetual_ask_price_0'].std()
+                if vol>100:
+                    vol = 100
+                self.vols.append(vol)
+            else:
+                return self.vols[-1]
+        return vol
     def run(self, sim: Sim ) ->\
         Tuple[ List[OwnTrade], List[MdUpdate], List[ Union[OwnTrade, MdUpdate] ], List[Order] ]:
         '''
@@ -643,8 +648,8 @@ def md_to_dataframe(md_list: List[MdUpdate]) -> pd.DataFrame:
 
 
 if __name__ == "__main__":
-    PATH_TO_FILE = 'D:/it/cmf/hft/week1/md/md/btcusdt_Binance_LinearPerpetual/'
-    df = pd.read_csv('D:/it/cmf/hft/week1/md/md/btcusdt_Binance_LinearPerpetual/lobs.csv')
+    PATH_TO_FILE = '../week1/md/md/btcusdt_Binance_LinearPerpetual/'
+    df = pd.read_csv('../week1/md/md/btcusdt_Binance_LinearPerpetual/lobs.csv')
     start, end = 314000, 957000
     df = df.loc[start:end,:]
     md = load_md_from_file(path=PATH_TO_FILE, nrows=2000000)
