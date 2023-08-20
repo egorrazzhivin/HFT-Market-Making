@@ -137,8 +137,8 @@ class Sim:
     def update_best_pos(self) -> None:
         assert not self.md is None, "no current market data!" 
         if not self.md.orderbook is None:
-            self.best_bid = self.md.orderbook.bids[0][0]#МЭЭЭЭЭЭЭЭЭЭЭЭЭ
-            self.best_ask = self.md.orderbook.asks[0][0]#"MUUUUUUUUUUUUUUU"
+            self.best_bid = self.md.orderbook.bids[0][0]
+            self.best_ask = self.md.orderbook.asks[0][0]
             #self.mid_price = (self.md.orderbook.bids[0][0] + self.md.orderbook.asks[0][0]) * 0.5
     
     
@@ -313,14 +313,12 @@ class Sim:
 
 
     def place_order(self, ts:float, size:float, side:str, price:float) -> Order:
-        #добавляем заявку в список всех заявок
         order = Order(ts, ts + self.latency, self.get_order_id(), side, size, price)
         self.actions_queue.append(order)
         return order
 
     
     def cancel_order(self, ts:float, id_to_delete:int) -> CancelOrder:
-        #добавляем заявку на удаление
         ts += self.latency
         delete_order = CancelOrder(ts, id_to_delete)
         self.actions_queue.append(delete_order)
@@ -458,7 +456,6 @@ def load_trades(path, nrows=10000) -> List[AnonTrade]:
     '''
     trades = pd.read_csv(path + 'trades.csv', nrows=nrows)
     #trades = trades.iloc[:10000, :]
-    #переставляю колонки, чтобы удобнее подавать их в конструктор AnonTrade
     trades = trades[ ['exchange_ts', 'receive_ts', 'aggro_side', 'size', 'price' ] ].sort_values(["exchange_ts", 'receive_ts'])
     receive_ts = trades.receive_ts.values
     exchange_ts = trades.exchange_ts.values 
@@ -489,12 +486,12 @@ def load_books(path, nrows=10000) -> List[OrderbookSnapshotUpdate]:
     #timestamps
     receive_ts = lobs.receive_ts.values
     exchange_ts = lobs.exchange_ts.values 
-    #список ask_price, ask_vol для разных уровней стакана
-    #размеры: len(asks) = 10, len(asks[0]) = len(lobs)
+    #list of ask_price, ask_vol for different levels of orderbook
+    #sizes: len(asks) = 10, len(asks[0]) = len(lobs)
     asks = [list(zip(lobs[f"ask_price_{i}"],lobs[f"ask_vol_{i}"])) for i in range(10)]
-    #транспонируем список
+    #transpose the list
     asks = [ [asks[i][j] for i in range(len(asks))] for j in range(len(asks[0]))]
-    #тоже самое с бидами
+    #transpose the list
     bids = [list(zip(lobs[f"bid_price_{i}"],lobs[f"bid_vol_{i}"])) for i in range(10)]
     bids = [ [bids[i][j] for i in range(len(bids))] for j in range(len(bids[0]))]
     
@@ -618,7 +615,7 @@ def md_to_dataframe(md_list: List[MdUpdate]) -> pd.DataFrame:
     return df
 
 if __name__ == "__main__":
-    PATH_TO_FILE = 'D:/it/cmf/hft/week1/md/md/btcusdt_Binance_LinearPerpetual/'
+    PATH_TO_FILE = '...'
     NROWS = 30000
     md = load_md_from_file(path=PATH_TO_FILE, nrows=NROWS)
     latency = pd.Timedelta(10, 'ms').delta
